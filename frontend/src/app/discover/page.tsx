@@ -211,7 +211,7 @@ export default function Discover() {
                         <div className="text-xs px-2 py-1 rounded bg-white/5 border border-[var(--border)] text-[var(--muted)]">{player.skill}</div>
                       </div>
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {player.games.map(game => (
+                        {(player.games || []).map((game: string) => (
                           <span key={game} className="text-xs px-2 py-1 rounded-full border border-[var(--border)] text-[var(--muted)] bg-white/5">{game}</span>
                         ))}
                       </div>
@@ -244,7 +244,7 @@ export default function Discover() {
                         {venue.location}
                       </div>
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {venue.games.map(game => (
+                        {(venue.games || []).map((game: string) => (
                           <span key={game} className="text-xs px-2 py-1 rounded border border-[var(--accent)]/30 text-[var(--accent)] bg-[var(--accent)]/10">{game}</span>
                         ))}
                       </div>
