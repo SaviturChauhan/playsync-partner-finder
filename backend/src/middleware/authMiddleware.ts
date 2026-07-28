@@ -5,7 +5,9 @@ import { getAuth, DecodedIdToken } from 'firebase-admin/auth';
 // Initialize Firebase Admin (requires service account key in production)
 try {
   if (getApps().length === 0) {
-    initializeApp();
+    initializeApp({
+      projectId: process.env.FIREBASE_PROJECT_ID || 'playsync-auth'
+    });
   }
 } catch (error) {
   console.error("Firebase admin initialization error", error);
