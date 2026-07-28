@@ -123,10 +123,12 @@ export const getConversation = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Not friends with this user' });
     }
 
+    const friendObjectId = new mongoose.Types.ObjectId(friendId);
+
     const messages = await Message.find({
       $or: [
-        { senderId: me._id, receiverId: friendId },
-        { senderId: friendId, receiverId: me._id },
+        { senderId: me._id, receiverId: friendObjectId },
+        { senderId: friendObjectId, receiverId: me._id },
       ],
     } as any)
       .sort({ createdAt: 1 })
