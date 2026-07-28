@@ -6,6 +6,7 @@ import MobileNav from "@/app/components/MobileNav";
 import Select from "@/app/components/Select";
 import { api } from "@/lib/api";
 import { useToast } from "@/lib/Toast";
+import { useAuth } from "@/lib/AuthContext";
 
 interface Community {
   _id: string;
@@ -34,9 +35,11 @@ export default function Communities() {
     name: "", description: "", location: "", city: "", type: "Club", games: [] as string[],
   });
   const [isCreating, setIsCreating] = useState(false);
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     const fetchCommunities = async () => {
+      if (!user) return;
       setIsLoading(true);
       try {
         const [mine, all] = await Promise.allSettled([
@@ -51,8 +54,14 @@ export default function Communities() {
         setIsLoading(false);
       }
     };
-    fetchCommunities();
-  }, []);
+    if (!loading) {
+      if (user) {
+        fetchCommunities();
+      } else {
+        setIsLoading(false);
+      }
+    }
+  }, [user, loading]);
 
   const handleJoin = async (communityId: string) => {
     try {

@@ -7,6 +7,7 @@ import PlayRequestModal from "@/app/components/PlayRequestModal";
 import Select from "@/app/components/Select";
 import { api } from "@/lib/api";
 import { useToast } from "@/lib/Toast";
+import { useAuth } from "@/lib/AuthContext";
 
 const GAMES = ["All", "Badminton", "Tennis", "Chess", "Table Tennis", "Cricket", "Football", "Basketball", "Carrom", "Volleyball", "Archery/Shooting"];
 const SKILLS = ["All", "Beginner", "Intermediate", "Advanced"];
@@ -21,6 +22,7 @@ export default function Discover() {
   const [players, setPlayers] = useState<Array<Record<string, any>>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { showToast } = useToast();
+  const { user, loading } = useAuth();
 
   // Play request modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -50,8 +52,14 @@ export default function Discover() {
       }
     };
 
-    fetchData();
-  }, [cityFilter, gameFilter, skillFilter]);
+    if (!loading) {
+      if (user) {
+        fetchData();
+      } else {
+        setIsLoading(false);
+      }
+    }
+  }, [cityFilter, gameFilter, skillFilter, user, loading]);
 
   const handleSendRequest = async (data: { game: string; scheduledTime: string; message: string }) => {
     if (!selectedPlayer) return;
