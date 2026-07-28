@@ -123,7 +123,7 @@ export const getConversation = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Not friends with this user' });
     }
 
-    const friendObjectId = new mongoose.Types.ObjectId(friendId);
+    const friendObjectId = new mongoose.Types.ObjectId(friendId as string);
 
     const messages = await Message.find({
       $or: [
