@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import User from '../models/User';
 
-// Get players based on filters (city, skill)
+// Get players based on filters (city, skill, game, availability)
 export const getPlayers = async (req: Request, res: Response) => {
   try {
-    const { city, skill } = req.query;
+    const { city, skill, game, day, timeSlot } = req.query;
     
     // Build query object
     const query: any = {};
@@ -13,8 +13,20 @@ export const getPlayers = async (req: Request, res: Response) => {
       query.location = new RegExp(city as string, 'i');
     }
     
-    if (skill) {
+    if (skill && skill !== 'All') {
       query.skillLevel = skill;
+    }
+
+    if (game && game !== 'All') {
+      query.games = { $in: [game] };
+    }
+
+    if (day) {
+      query['availability.days'] = { $in: Array.isArray(day) ? day : [day] };
+    }
+
+    if (timeSlot) {
+      query['availability.timeSlots'] = { $in: Array.isArray(timeSlot) ? timeSlot : [timeSlot] };
     }
 
     // Exclude the current user from the results if they are authenticated
@@ -22,7 +34,9 @@ export const getPlayers = async (req: Request, res: Response) => {
       query.firebaseUid = { $ne: req.user.uid };
     }
 
-    const players = await User.find(query).select('-email -phone -createdAt -updatedAt');
+    const players = await User.find(query)
+      .select('-email -phone -createdAt -updatedAt -__v')
+      .sort({ updatedAt: -1 });
     
     res.json(players);
   } catch (error) {

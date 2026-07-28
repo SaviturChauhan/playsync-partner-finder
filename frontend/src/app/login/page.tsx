@@ -1,31 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/AuthContext";
+import { useToast } from "@/lib/Toast";
 
 export default function Login() {
   const [phone, setPhone] = useState("");
   const router = useRouter();
+  const { user, loading } = useAuth();
+  const { showToast } = useToast();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && user) {
+      router.push("/discover");
+    }
+  }, [user, loading, router]);
   
   const handleGoogleSignIn = async () => {
     try {
-      // In a real app, this will work when env variables are set.
       await signInWithPopup(auth, googleProvider);
+      showToast("Signed in successfully!", "success");
       router.push("/onboarding");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Please configure Firebase keys in .env.local to test real auth. For demo purposes, we will route to onboarding anyway.");
-      router.push("/onboarding");
+      if (error?.code === "auth/popup-closed-by-user") {
+        showToast("Sign-in cancelled", "info");
+      } else {
+        showToast("Sign-in failed. Please try again.", "error");
+      }
     }
   };
 
   const handlePhoneOTP = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Phone auth requires Firebase reCAPTCHA setup. For now, click Google Sign-in to see the next flow.");
+    showToast("Phone auth requires Firebase reCAPTCHA setup. Use Google Sign-in for now.", "info");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex items-center justify-center p-6 animate-fade-in">

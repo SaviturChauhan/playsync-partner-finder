@@ -5,9 +5,11 @@ export interface IMatchRequest extends Document {
   receiverId: mongoose.Types.ObjectId;
   venueId?: mongoose.Types.ObjectId;
   game: string;
-  status: 'pending' | 'accepted' | 'declined';
+  status: 'pending' | 'accepted' | 'declined' | 'cancelled';
   scheduledTime: Date;
   message?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const MatchRequestSchema: Schema = new Schema({
@@ -15,7 +17,7 @@ const MatchRequestSchema: Schema = new Schema({
   receiverId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   venueId: { type: Schema.Types.ObjectId, ref: 'Venue' },
   game: { type: String, required: true },
-  status: { type: String, enum: ['pending', 'accepted', 'declined'], default: 'pending' },
+  status: { type: String, enum: ['pending', 'accepted', 'declined', 'cancelled'], default: 'pending' },
   scheduledTime: { type: Date, required: true },
   message: { type: String },
 }, { timestamps: true });
