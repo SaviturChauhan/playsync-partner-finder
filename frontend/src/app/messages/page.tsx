@@ -6,6 +6,7 @@ import Sidebar from "@/app/components/Sidebar";
 import MobileNav from "@/app/components/MobileNav";
 import { api } from "@/lib/api";
 import { useToast } from "@/lib/Toast";
+import { useAuth } from "@/lib/AuthContext";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -99,6 +100,7 @@ export default function Messages() {
   const [sentRequests, setSentRequests] = useState<PlayRequest[]>([]);
   const [requestsLoading, setRequestsLoading] = useState(true);
 
+  const { user, loading } = useAuth();
   const { showToast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -110,10 +112,11 @@ export default function Messages() {
 
   // ── Get my Mongo user ID ──
   useEffect(() => {
-    api.get("/api/users/me").then((user: any) => {
-      setMyMongoId(user?._id || null);
+    if (!user) return;
+    api.get("/api/users/me").then((data: any) => {
+      setMyMongoId(data?._id || null);
     }).catch(() => {});
-  }, []);
+  }, [user]);
 
   // ── Load conversations ──
   const loadConversations = useCallback(async () => {
@@ -128,8 +131,10 @@ export default function Messages() {
   }, []);
 
   useEffect(() => {
-    loadConversations();
-  }, [loadConversations]);
+    if (!loading && user) {
+      loadConversations();
+    }
+  }, [loadConversations, user, loading]);
 
   // ── Load messages for active friend (with polling) ──
   const loadMessages = useCallback(async (friendId: string) => {
@@ -179,10 +184,14 @@ export default function Messages() {
         setRequestsLoading(false);
       }
     };
-    fetchRequests();
-  }, []);
 
-  // ── Send message ──
+    if (!loading) {
+      if (user) fetchRequests();
+      else setRequestsLoading(false);
+    }
+  }, [user, loading]);
+
+  // ── Action Handlers ──
   const handleSend = async () => {
     if (!messageInput.trim() || !activeFriendId || isSending) return;
     const content = messageInput.trim();
